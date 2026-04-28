@@ -1,7 +1,6 @@
 # Revival
 
-“I found the crown of France in the gutter, and I picked it up.”
-- Napoleon
+“I found the crown of France in the gutter, and I picked it up.” - Napoleon
 
 Having a crack at implementing some features - people are welcome to join. I patched the bluetooth behaviour to restore rumble and lightbar functionality.
 
