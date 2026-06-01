@@ -733,6 +733,11 @@ namespace DS4Windows
             //    CheckOutputReportTypes();
             //}
 
+            // Flush stale HID state from previous BT session so output reports are delivered
+            // without requiring a controller power cycle
+            if (conType == ConnectionType.BT)
+                hDevice.flush_Queue();
+
             sendOutputReport(true, true, false); // initialize the output report (don't force disconnect the gamepad on initialization even if writeData fails because some fake DS4 gamepads don't support writeData over BT)
         }
 
@@ -2087,6 +2092,8 @@ namespace DS4Windows
                 if (nativeOptionsStore.IsCopyCat)
                 {
                     outputFeaturesByte = COPYCAT_OUTPUT_FEATURES;
+                    if (conType == ConnectionType.BT)
+                        AppLogger.LogToGui($"{Mac}: Copycat flag is set — using interrupt pipe for BT output (lightbar/rumble may not work on some adapters). Uncheck 'Copycat' in controller settings if this is a genuine DS4.", true);
                 }
                 else
                 {

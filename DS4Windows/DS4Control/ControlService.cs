@@ -2156,10 +2156,35 @@ namespace DS4Windows
                 ChangeExclusiveStatus(device);
             }
 
-            //Task task = new Task(() => { Thread.Sleep(5); WarnExclusiveModeFailure(device); });
-            //task.Start();
+            AddDeviceToSessionBlacklist(device);
 
             PrepareDS4DeviceSettingHooks(device);
+        }
+
+        private void AddDeviceToSessionBlacklist(DS4Device device)
+        {
+            if (!Global.hidHideInstalled) return;
+
+            try
+            {
+                string deviceInstanceId = Global.GetInstanceIdFromDevicePath(device.HidDevice.DevicePath);
+                if (string.IsNullOrEmpty(deviceInstanceId)) return;
+
+                using (HidHideAPIDevice hidHideDevice = new HidHideAPIDevice())
+                {
+                    if (!hidHideDevice.IsOpen()) return;
+
+                    if (!hidHideDevice.GetActiveState())
+                        hidHideDevice.SetActiveState(true);
+
+                    hidHideDevice.AddSessionBlacklist(new List<string> { deviceInstanceId });
+                    LogDebug($"Added {deviceInstanceId} to HidHide session blacklist");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"Failed to add device to HidHide session blacklist: {ex.Message}");
+            }
         }
 
         public void ResetUdpSmoothingFilters(int idx)

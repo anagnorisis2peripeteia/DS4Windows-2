@@ -35,6 +35,8 @@ namespace DS4WinWPF.DS4Control
         private const uint IOCTL_SET_ACTIVE = 0x80016014;
         private const uint IOCTL_GET_WL_INVERT = 0x80016018;
         private const uint IOCTL_SET_WL_INVERT = 0x8001601C;
+        private const uint IOCTL_ADD_SESSION_BLACKLIST = 0x80016020;
+        private const uint IOCTL_CLR_SESSION_BLACKLIST = 0x80016024;
 
         private const string CONTROL_DEVICE_FILENAME = "\\\\.\\HidHide";
 
@@ -265,6 +267,46 @@ namespace DS4WinWPF.DS4Control
                 //int error = Marshal.GetLastWin32Error();
             }
 
+            return result;
+        }
+
+        public bool AddSessionBlacklist(List<string> instances)
+        {
+            bool result = false;
+            int bytesReturned = 0;
+            IntPtr inBuffer =
+                StringListToMultiSzPointer(instances, out int inBufferLength);
+
+            result = NativeMethods.DeviceIoControl(hidHideHandle.DangerousGetHandle(),
+                IOCTL_ADD_SESSION_BLACKLIST,
+                inBuffer,
+                inBufferLength,
+                IntPtr.Zero,
+                0,
+                ref bytesReturned,
+                IntPtr.Zero);
+
+            Marshal.FreeHGlobal(inBuffer);
+            return result;
+        }
+
+        public bool ClearSessionBlacklist()
+        {
+            bool result = false;
+            int bytesReturned = 0;
+            IntPtr inBuffer =
+                StringListToMultiSzPointer(new List<string>(), out int inBufferLength);
+
+            result = NativeMethods.DeviceIoControl(hidHideHandle.DangerousGetHandle(),
+                IOCTL_CLR_SESSION_BLACKLIST,
+                inBuffer,
+                inBufferLength,
+                IntPtr.Zero,
+                0,
+                ref bytesReturned,
+                IntPtr.Zero);
+
+            Marshal.FreeHGlobal(inBuffer);
             return result;
         }
 
