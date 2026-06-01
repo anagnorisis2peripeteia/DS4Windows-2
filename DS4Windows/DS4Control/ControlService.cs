@@ -2200,10 +2200,40 @@ namespace DS4Windows
                 using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam", true))
                 {
                     if (key == null) return;
+
+                    bool alreadyDisabled =
+                        (key.GetValue("SteamController_XBoxSupport") is int xb && xb == 0) &&
+                        (key.GetValue("SteamController_PS4Support") is int ps && ps == 0) &&
+                        (key.GetValue("SteamController_SwitchSupport") is int sw && sw == 0);
+
                     key.SetValue("SteamController_XBoxSupport", 0, Microsoft.Win32.RegistryValueKind.DWord);
                     key.SetValue("SteamController_PS4Support", 0, Microsoft.Win32.RegistryValueKind.DWord);
                     key.SetValue("SteamController_SwitchSupport", 0, Microsoft.Win32.RegistryValueKind.DWord);
+
+                    if (alreadyDisabled)
+                    {
+                        LogDebug("Steam controller support already disabled");
+                        return;
+                    }
+
                     LogDebug("Disabled Steam controller support via registry");
+
+                    string steamExe = key.GetValue("SteamExe") as string;
+                    if (string.IsNullOrEmpty(steamExe)) return;
+
+                    var steamProcs = System.Diagnostics.Process.GetProcessesByName("steam");
+                    if (steamProcs.Length > 0)
+                    {
+                        LogDebug("Restarting Steam to apply controller settings...");
+                        foreach (var p in System.Diagnostics.Process.GetProcessesByName("steamwebhelper"))
+                            try { p.Kill(); } catch { }
+                        foreach (var p in steamProcs)
+                            try { p.Kill(); } catch { }
+
+                        System.Threading.Thread.Sleep(3000);
+                        System.Diagnostics.Process.Start(steamExe, "-silent");
+                        LogDebug("Steam restarted with controller support disabled");
+                    }
                 }
             }
             catch (Exception ex)
