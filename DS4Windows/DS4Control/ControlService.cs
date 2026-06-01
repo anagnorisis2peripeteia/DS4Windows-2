@@ -2185,6 +2185,31 @@ namespace DS4Windows
             {
                 LogDebug($"Failed to add device to HidHide session blacklist: {ex.Message}");
             }
+
+            DisableSteamControllerSupport();
+        }
+
+        private static bool steamControllerSupportDisabled = false;
+        private void DisableSteamControllerSupport()
+        {
+            if (steamControllerSupportDisabled) return;
+            steamControllerSupportDisabled = true;
+
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam", true))
+                {
+                    if (key == null) return;
+                    key.SetValue("SteamController_XBoxSupport", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                    key.SetValue("SteamController_PS4Support", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                    key.SetValue("SteamController_SwitchSupport", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                    LogDebug("Disabled Steam controller support via registry");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"Failed to disable Steam controller support: {ex.Message}");
+            }
         }
 
         public void ResetUdpSmoothingFilters(int idx)
