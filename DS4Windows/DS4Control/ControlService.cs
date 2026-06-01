@@ -1007,6 +1007,7 @@ namespace DS4Windows
 
         private void StartViGEm()
         {
+            ResetViGEmBus();
             // Refresh internal ViGEmBus info
             Global.RefreshViGEmBusInfo();
             if (Global.IsRunningSupportedViGEmBus())
@@ -1029,6 +1030,29 @@ namespace DS4Windows
             }
 
             tempThread = null;
+        }
+
+        private void ResetViGEmBus()
+        {
+            try
+            {
+                LogDebug("Resetting ViGEmBus to clear stale virtual controllers...");
+                var psi = new System.Diagnostics.ProcessStartInfo("net", "stop ViGEmBus")
+                    { CreateNoWindow = true, UseShellExecute = false, RedirectStandardOutput = true };
+                var p = System.Diagnostics.Process.Start(psi);
+                p.WaitForExit(5000);
+
+                psi.Arguments = "start ViGEmBus";
+                p = System.Diagnostics.Process.Start(psi);
+                p.WaitForExit(5000);
+
+                Thread.Sleep(1000);
+                LogDebug("ViGEmBus reset complete");
+            }
+            catch (Exception ex)
+            {
+                LogDebug($"ViGEmBus reset skipped: {ex.Message}");
+            }
         }
 
         private void StopViGEm()
