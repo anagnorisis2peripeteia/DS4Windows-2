@@ -396,6 +396,11 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
 
             PopulateToolText();
+
+            if (controllerList.Count == 0 && Global.UseIconChoice == TrayIconChoice.Battery)
+            {
+                IconSource = $"{Global.RESOURCES_PREFIX}/DS4W.ico";
+            }
         }
 
         private void HookEvents(object sender, EventArgs e)
